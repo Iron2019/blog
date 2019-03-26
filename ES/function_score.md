@@ -12,7 +12,7 @@ PUT /blogposts/post/1
 }
 ```
 那么，我们在搜索时，可以用function_score与field_value_factor结合使用，即将相关度与点赞数结合，示例如下：
-```
+```JAVA
 {
   "query": {
 	"function_score": { 

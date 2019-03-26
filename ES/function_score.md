@@ -12,22 +12,22 @@ PUT /blogposts/post/1
 }
 ```
 那么，我们在搜索时，可以用function_score与field_value_factor结合使用，即将相关度与点赞数结合，示例如下：
-```JAVA
-GET /blogposts/post/_search
-
-{
-  "query": {
-	"function_score": {
-	  "query": { 
-		"multi_match": {
-		  "query":    "popularity",
-		  "fields": [ "title", "content" ]
-		}
-	  },
-	  "field_value_factor": { 
-		"field": "votes" 
-	  }
-	}
-  }
-}
+```
+00000001 GET /blogposts/post/_search
+00000002 
+00000003 {
+00000004   "query": {
+00000005 	"function_score": {
+00000006 	  "query": { 
+00000007 		"multi_match": {
+00000008 		  "query":    "popularity",
+00000009 		  "fields": [ "title", "content" ]
+00000010 		}
+00000011 	  },
+00000012 	  "field_value_factor": { 
+00000013 		"field": "votes" 
+00000014 	  }
+00000015 	}
+00000016   }
+00000017 }
 ```

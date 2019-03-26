@@ -41,3 +41,6 @@ function_score 查询 是用来控制评分过程的终极武器，它允许为�
 ***
 在前面示例中，每个文档的最终评分 `_score` 都做了如下修改：
 > new_score = old_score * number_of_votes
+然而这并不会带来出人意料的好结果，全文评分 _score 通常处于 0 到 10 之间，如下图 图 29 “受欢迎度的线性关系基于 _score 的原始值 2.0” 中，有 10 个赞的博客会掩盖掉全文评分，而 0 个赞的博客的评分会被置为 0 。
+***受欢迎度的线性关系基于 _score 的原始值 2.0***
+![线性关系图](https://www.elastic.co/guide/cn/elasticsearch/guide/cn/images/elas_1702.png)

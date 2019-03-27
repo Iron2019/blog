@@ -47,3 +47,97 @@ function_score 查询 是用来控制评分过程的终极武器，它允许为�
 ***受欢迎度的线性关系基于 _score 的原始值 2.0***
 
 ![线性关系图](https://www.elastic.co/guide/cn/elasticsearch/guide/cn/images/elas_1701.png)
+
+**modifier**
+
+一种更好的方式是使用`modifier`平滑`votes`的值。换句话说，我们希望最开始的一些赞更重要，但是其重要性随着数字的增加而降低。0个赞与1个赞的区别应该比10个赞和11个赞的区别大很多。
+
+对于上述情况，典型的`modifier`应用是使用`log1p`参数值，公式如下：
+```
+new_score=old_score *log(1+number_of_votes)
+```
+
+log对数函数是`votes`赞字段的评分曲线更平滑，如图["受欢迎度的对数关系基于`_score`的原始值`2.0`"](https://www.elastic.co/guide/cn/elasticsearch/guide/cn/images/elas_1702.png):
+
+***欢迎度的对数关系基于`_score`的原始值`2.0`***
+
+!["受欢迎度的对数关系基于`_score`的原始值`2.0`"](https://www.elastic.co/guide/cn/elasticsearch/guide/cn/images/elas_1702.png)
+
+带`modifier`参数的请求如下：
+```
+00000001 GET /blogposts/post/_search
+00000002 {
+00000003   "query": {
+00000004     "function_score": {
+00000005       "query": {
+00000006         "multi_match": {
+00000007           "query":    "popularity",
+00000008           "fields": [ "title", "content" ]
+00000009         }
+00000010       },
+00000011       "field_value_factor": {
+00000012         "field":    "votes",
+00000013         "modifier": "log1p" 
+00000014       }
+00000015     }
+00000016   }
+00000017 }
+```
+
+**第13行**  modifierwei log1p.
+
+修饰语`modifier`的值可以为:`none`(默认状态),`log`,`log1p`,`log2p`,`ln`,`ln1p`,`ln2p`,`square`,`sqrt`以及`reciprocal`。
+
+**factor**
+
+可以通过将`votes`字段与`factor`的积来调节受欢迎程度效果的高低：
+```
+00000001 GET /blogposts/post/_search
+00000002 {
+00000003   "query": {
+00000004     "function_score": {
+00000005       "query": {
+00000006         "multi_match": {
+00000007           "query":    "popularity",
+00000008           "fields": [ "title", "content" ]
+00000009         }
+00000010       },
+00000011       "field_value_factor": {
+00000012         "field":    "votes",
+00000013         "modifier": "log1p",
+00000014         "factor":   2 
+00000015       }
+00000016     }
+00000017   }
+00000018 }
+```
+
+**第14行** 双倍效果.
+
+添加了`factor`会使公式变成这样：
+```
+new_score = old_score * log(1 + factor * number_of_votes)
+```
+
+factor 值大于 1 会提升效果， factor 值小于 1 会降低效果，如图
+
+***受欢迎度的对数关系基于多个不同因子***
+
+!["受欢迎度的对数关系基于多个不同因子"](https://www.elastic.co/guide/cn/elasticsearch/guide/cn/images/elas_1703.png)
+
+**boost_mode**
+
+将全文评分与`field_value_factor`函数乘积的效果仍然可能太大，我们可以通过控制参数`boost_mode`来控制函数与查询评分`_score`合并后的结果，参数接受的值为：
+> `mutiply`
+     评分`_score`与函数值的乘积(默认)
+>`sum`
+     评分`_score`与函数值的和
+>`min`
+    评分`_score`与函数值的较小值
+>`max`
+	评分`_score`与函数值的较大值
+>`replace`
+	函数值取代评分`_score`
+	
+
+
